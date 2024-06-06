@@ -25,6 +25,7 @@ Demoing this project at DomCon 2024 brought up some interesting questions, conce
     1. Putting in a cooldown for the button was a really good idea because soooo many people would just mash it a bunch of times.
     1. TODO: Power Management needs to be improved.
     1. TODO: When booting up and in an error state, the vibe goes to 100%.... I guess that's one way of getting someone's attention 0:-)  Obviously that needs to be fixed.  
+    <img src="documentation/20240602_132546.jpg" height="500">
 
 ## Feedback and future ideas
 
