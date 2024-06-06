@@ -4,7 +4,7 @@ The Push My Button is a backpack worn by a person, which has a button on it, and
 
 ## Background
 
-This idea has been bouncing around my head for the last 10 years.  Specifically, I wanted to make a submissive interact with other people and have them turn them on.  It ended up spawning some other
+This idea has been bouncing around my head for the last 10 years.  Specifically, I wanted to make a submissive interact with other people and have them turn them on.  It ended up spawning some other ideas and feedback after we tried it out at DomCon 2024.
 
 ## Building it
 
