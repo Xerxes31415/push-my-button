@@ -1,12 +1,29 @@
-import board
+"""
 
+TODO: Find a better way to connect.  It's currently based on short-name, but address would be better.
+
+"""
+import board
+import struct
+
+# import terminalio
+# import displayio
+# from adafruit_display_text import label
 import time
 import digitalio
 import random
 import pwmio
 import array as arr
 
+from adafruit_ble import BLERadio
+from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
+from adafruit_ble.services.nordic import UARTService
+
 import adafruit_max1704x
+
+from lovense import Lovense
+
+# print(dir(board))
 
 BUTTON_FREQ = 500  # 5 seconds
 
@@ -18,23 +35,48 @@ DUR_MAX = 12000  # 120 seconds
 stim_int_queue = []
 stim_dur_queue = []
 
-pwm = pwmio.PWMOut(board.D11)
-button_led = pwmio.PWMOut(board.D12)
+pwm = pwmio.PWMOut(board.IO11)
+button_led = pwmio.PWMOut(board.IO12)
 button_led.duty_cycle = 903
 button_led_dir = 1  # 0: down, 1: up
 blink_counter = 0
 
-sw = digitalio.DigitalInOut(board.D9)
+sw = digitalio.DigitalInOut(board.IO10)
 sw.direction = digitalio.Direction.INPUT
 sw.pull = digitalio.Pull.UP
 sw_old = sw.value
 sw_counter = 0
 
-monitor = adafruit_max1704x.MAX17048(board.I2C())
-batt_timer = 12000
+# monitor = adafruit_max1704x.MAX17048(board.I2C())
+batt_timer = 120
 
-print(f"Battery voltage: {monitor.cell_voltage:.2f} Volts")
+# print(f"Battery voltage: {monitor.cell_voltage:.2f} Volts")
 
+ble = BLERadio()
+uart = UARTService()
+advertisement = ProvideServicesAdvertisement(uart)
+
+toy = None
+print("scanning")
+found = set()
+for entry in ble.start_scan(ProvideServicesAdvertisement, timeout=60, minimum_rssi=-50):
+    addr = entry.address
+    if addr not in found:
+        print(entry)
+        if entry.short_name is "LVS-Lush":
+            print("Found LUSH")
+            toy = ble.connect(entry)
+            break
+    found.add(addr)
+
+if Lovense in toy:
+    print("LVS Service found")
+    ctl = toy[Lovense]
+    ctl.getBattery()
+    ctl.vibe(5)
+    
+
+print("scan done")
 
 while True:
     # if switch falling edge is detected, add a new stimulus to the queue
@@ -95,8 +137,8 @@ while True:
                 button_led_dir = 1
 
     batt_timer -= 1
-    if batt_timer < 0:
-        batt_timer = 12000
-        print(f"Battery voltage: {monitor.cell_voltage:.2f} Volts")
+    if batt_timer < 1:
+        batt_timer = 120
+        #print(f"Battery voltage: {monitor.cell_voltage:.2f} Volts")
 
     time.sleep(0.01)
