@@ -17,7 +17,7 @@ import array as arr
 
 from adafruit_ble import BLERadio
 from adafruit_ble.advertising.standard import ProvideServicesAdvertisement
-from adafruit_ble.services.nordic import UARTService
+from adafruit_ble.uuid import UUID
 
 import adafruit_max1704x
 
@@ -53,28 +53,29 @@ batt_timer = 120
 # print(f"Battery voltage: {monitor.cell_voltage:.2f} Volts")
 
 ble = BLERadio()
-uart = UARTService()
-advertisement = ProvideServicesAdvertisement(uart)
 
 toy = None
 print("scanning")
 found = set()
 for entry in ble.start_scan(ProvideServicesAdvertisement, timeout=60, minimum_rssi=-50):
-    addr = entry.address
-    if addr not in found:
+    if Lovense in entry.services:
+        print("Lovense Service Found")
+        toy = ble.connect(entry)
+        break
+    if isinstance(entry.short_name,str) and entry.short_name.startswith("LVS-"):
+        print("Found LUSH")
         print(entry)
-        if entry.short_name is "LVS-Lush":
-            print("Found LUSH")
-            toy = ble.connect(entry)
-            break
-    found.add(addr)
+        
+        #toyUUID = UUID.packinto(entry.services)
+        print(entry.services)
+        
 
 if Lovense in toy:
     print("LVS Service found")
     ctl = toy[Lovense]
     ctl.getBattery()
-    ctl.vibe(5)
-    
+    ctl.connection_alert()
+
 
 print("scan done")
 

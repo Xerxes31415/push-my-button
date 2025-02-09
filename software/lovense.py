@@ -1,47 +1,46 @@
-'''
-Lovense Driver
+# Write your code here :-)
+import time
+import re
 
-TODO: Make the UUID dynamic
-TODO: Flesh out the functions
-'''
+
 from adafruit_ble.services import Service
-from adafruit_ble.uuid import VendorUUID
+from adafruit_ble.uuid import *
 from adafruit_ble.characteristics.stream import StreamOut, StreamIn
 from adafruit_ble.characteristics.string import StringCharacteristic
 from adafruit_ble.characteristics import Characteristic
-import time
 
-class Lovense(Service):
-    uuid = VendorUUID("53300001-0023-4bd4-bbd5-a6920e4c5653")
-    _out = StringCharacteristic(uuid = VendorUUID("53300002-0023-4bd4-bbd5-a6920e4c5653"), properties=Characteristic.WRITE)
-    _response = StreamIn(uuid = VendorUUID("53300003-0023-4bd4-bbd5-a6920e4c5653"), properties=Characteristic.NOTIFY)
-    #_out = StreamIn(uuid = VendorUUID("53300002-0023-4bd4-bbd5-a6920e4c5653"))
-    #_response = StreamOut(uuid = VendorUUID("53300003-0023-4bd4-bbd5-a6920e4c5653"))
+from lovenseUARTService import LovenseUARTService
+
+class Lovense(LovenseUARTService):
+
+    def __init__(self, service: None, uuid: VendorUUID=None) -> None:
+        super().__init__(service=service)
+
+    """ -----------------------------------------------------------------------------"""
+
+    def vibrate(self, intensity: int):
+        if intensity < 0:
+            intensity =0
+        if intensity >20:
+            intensity = 20
+        self.write(f'Vibrate:{intensity};')
+        #print(self.read(3).decode())
 
     def getBattery(self) -> int:
+        self.reset_input_buffer()
         print("fetching Batt")
-        self._out = "Battery;"
-        time.sleep(1)
-        #print("Battery = " + self.response)
+        self.write("Battery;")
+        time.sleep(0.1)
+        print("Battery = " + self.read(50).decode())
         return 0
 
-    def vibe(self, val: int):
-        self._out = "Vibrate:10;"
-        time.sleep(1)
-        self._out = "Vibrate:0;"
+    """ ---------------------------------------Added Functions--------------------------------------"""
 
-    def status(self)->int:
-        return 0
-    def powerOff(self):
-        pass
-        
-    def getDeviceInfo(self)->str:
-        return "TBD"
+    def connection_alert(self):
+        print("Connection Alert")
+        for intensity in [5,10,15,20]:
+            self.vibrate(intensity)
+            time.sleep(0.4)
+            self.vibrate(0)
+            time.sleep(0.6)
 
-    # TODO: Light and LED functions
-    # TODO: Auto Resume settings
-    # TODO: Accelerometer Data
-    # TODO: Rotation Speed and Direction
-    # TODO: Air Levels
-    # TODO: Programmed Patterns
-    # TODO: Other House Keeping functions
